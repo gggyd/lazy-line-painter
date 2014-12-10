@@ -1,104 +1,183 @@
-<!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Lazy Line Painter</title>
-        <meta name="description" content="A Jquery plugin for SVG path animation">
+<!DOCTYPE HTML>
+<html>
+<head>
 
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta charset="UTF-8">
+    <meta name="robots" content="index,follow">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="Forked from Cam O'Connell's repo, I refactored this jQuery plugin that draws SVG lines to use requestAnimationFrame, and added the options and methods demo'd on this page.">
 
-        <style>
-			body {
-				background:#fffafa
-			}
+    <title>Lazylinepainter fork</title>
 
-			#demo {
-				width:349px;
-				height:277px;
-				position:absolute;
-				left:50%;
-				margin:80px 0 0 -175px;
-			}
+    <link rel="stylesheet" type="text/css" href="../assets/css/style.css?v=20141210">
+    <style type="text/css">
+    #circuitree-phase1,
+    #circuitree-phase2,
+    #circuitree-phase3,
+    #circuitree-phase4 {
+        width:430px;
+        height:570px;
+        position: absolute;
+        top:40px;
+        left:50%;
+        margin:0 0 0 -215px;
+    }
+    </style>
+    <script src="vendor/jquery-1.9.1.min.js"></script>
+    <script src="rAF-polyfil.js"></script>  
+    <script src="jquery.lazylinepainter-1.5.0.js"></script>  
+    <script src="../assets/js/circuitree-phases.js"></script> 
+    <script>
 
-		</style>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    
+    ga('create', 'UA-7742845-9', 'inorganik.github.io');
+    ga('send', 'pageview');
 
-        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-        <script>window.jQuery || document.write('<script src="jquery-1.9.1.min.js"><\/script>')</script>
+    </script>
+</head>
 
-		<script src="jquery.lazylinepainter-1.5.0.min.js"></script>
+<body>
+    <a class="forkMe" href="https://github.com/inorganik/lazy-line-painter"><img src="img/forkme_custom_indigo.png" alt="Fork me on GitHub"></a>
+    <div id="wrap">
+        <header>
+            <div id="github"><a class="block" href="https://github.com/inorganik"></a></div>
+            <div class="leaderLine">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</div>
+            <div id="logo"><a class="block" href="http://inorganik.github.io"></a></div>
+        </header>
+        <section>
+            <h1>Lazylinepainter</h1>
+            <p>Forked from <a href="https://github.com/camoconnell/lazy-line-painter">Cam O'Connell&rsquo;s repo</a>, I refactored this jQuery plugin that draws SVG lines to use requestAnimationFrame, and added the options and methods demo'd below. </p>
+            <h3 class="marginTop marginBottom"><a class="lime weight700" href="https://github.com/inorganik/lazy-line-painter">Download on Github</a></h3>
+        </section>
+        <section>
+            <form>
+                <h4 class="inlineLeft noMargin weight300">Options:</h4>
+                <div class="inlineLeft marginLeft marginRight">
+                    <input type="checkbox" onClick="toggleSequential(this)" checked><label class="inlineLabel">Draw sequentially</label>
+                </div>
+                <div class="inlineLeft marginRight">
+                    <input type="checkbox" onClick="toggleRandomColors(this)"><label class="inlineLabel">Use random stroke colors</label>
+                </div>
+                <div class="inlineLeft marginRight">
+                    <input type="checkbox" onClick="toggleOnComplete(this)"><label class="inlineLabel">Alert on complete</label>
+                </div>
+                <div class="inlineLeft marginRight">
+                    <input type="text" value="1" id="speedMultiplier" style="width:15px;">
+                    <label class="inlineLabel">Speed Multiplier</label>
+                </div>
+            </form>
+        </section>
+        <section>
+            <form>
+                <input type="button" value="PAINT!" onClick="paint()" class="inlineLeft marginRight">
+                <input type="button" value="Pause/Resume" onClick="pauseResume()" class="inlineLeft marginRight">
+            </form>
+        </section>
+        <section style="height:570px; padding:20px 0;">
+            <p id="toBegin">To begin, click 'PAINT!'</p>
+        	<div id="circuitree-phase1"></div>
+            <div id="circuitree-phase2"></div>
+            <div id="circuitree-phase3"></div>
+            <div id="circuitree-phase4"></div>
+        </section>
+    </div><!-- end #wrap -->
+</body>
 
-        <script type="text/javascript">
-			(function( $ ){
+<script type="text/javascript">
+    
+// lazyline
+var options = [
+    {
+        svgData: phase1,
+        strokeWidth: 2,  
+        strokeColor: '#70B700',
+        speedMultiplier: 1,
+        drawSequential: true
+    },{
+        svgData: phase2,
+        strokeWidth: 2,  
+        strokeColor: '#70B700',
+        speedMultiplier: 1,
+        drawSequential: true,
+    },{
+        svgData: phase3,
+        strokeWidth: 2,  
+        strokeColor: '#70B700',
+        speedMultiplier: 1,
+        drawSequential: true,
+    },{
+        svgData: phase4,
+        strokeWidth: 2,  
+        strokeColor: '#70B700',
+        speedMultiplier: 1,
+        drawSequential: true,
+    }
+];
 
-				/*
-				* Lazy Line Painter
-				* SVG Stroke animation.
-				*
-				* https://github.com/camoconnell/lazy-line-painter
-				*
-				* Copyright 2014
-				* Cam O'Connell - http://www.camoconnell.com  http://www.behance.net/camoconnell
-				* Released under the MIT license
-				*
-				*/
+var first = true;
 
-				// goto http://lazylinepainter.info to convert your svg into a svgData object.
-				var svgData = {
-					"demo" :
-					{
-						"strokepath" :
-						[
-							{   "path": "M7.603,5.5 c0,0,10.298,24.07,33.517,24.07c23.221,0,33.519-24.07,33.519-24.07s9.142,24.07,33.513,24.07c24.372,0,33.515-24.07,33.515-24.07 s10.858,24.07,33.518,24.07S208.703,5.5,208.703,5.5s9.717,24.07,33.521,24.07c23.801,0,33.518-24.07,33.518-24.07 s13.828,24.07,33.524,24.07c19.698,0,33.524-24.07,33.524-24.07",
-								"duration": 1500,
-								"strokeColor": '#c07775',
-								"strokeWidth": 8
-								},
-							{   "path": "M120,139.129 c0,0-8.708-34.233-42.483-34.236c-28.724-0.001-42.493,34.23-42.493,34.23",
-								"duration":300
-								},
-							{   "path": "M313.5,137.138 c0,0-12.209-32.137-39.746-32.138C246.216,104.999,234,137.132,234,137.132",
-								"duration":300
-								},
-							{   "path": "M80.246,193.604 c0,0,21.399,74.387,93.074,74.387c76.026,0,93.095-74.387,93.095-74.387",
-								"duration":500
-								}
-						],
-						"dimensions" : { "width": 349, "height":277 }
-					}
-				}
+function paint() {
+    console.log('paint');
+    reset();
+    first = false;
+    $('#toBegin').hide();
+    $('#circuitree-phase1').lazylinepainter('paint');
+    $('#circuitree-phase2').lazylinepainter('paint');
+    $('#circuitree-phase3').lazylinepainter('paint');
+    $('#circuitree-phase4').lazylinepainter('paint');
+}
+function pauseResume() {
+    $('#circuitree-phase1').lazylinepainter('pauseResume');
+    $('#circuitree-phase2').lazylinepainter('pauseResume');
+    $('#circuitree-phase3').lazylinepainter('pauseResume');
+    $('#circuitree-phase4').lazylinepainter('pauseResume');
+}
+function reset() {
+    setSpeedMultiplier();
+    if (!first) {
+        $('#circuitree-phase1').lazylinepainter('erase');
+        $('#circuitree-phase2').lazylinepainter('erase');
+        $('#circuitree-phase3').lazylinepainter('erase');
+        $('#circuitree-phase4').lazylinepainter('erase');
+    }
+    $('#circuitree-phase1').lazylinepainter(options[0]);
+    $('#circuitree-phase2').lazylinepainter(options[1]);
+    $('#circuitree-phase3').lazylinepainter(options[2]);
+    $('#circuitree-phase4').lazylinepainter(options[3]);
+}
+function toggleSequential(checkbox) {
+    var bool = checkbox.checked;
+    $.each(options, function(i, val) {
+        val.drawSequential = bool;
+    });
+}
+function toggleRandomColors(checkbox) {
+    var bool = checkbox.checked;
+    $.each(options, function(i, val) {
+        val.useRandomColors = bool;
+    });
+}
+function setSpeedMultiplier() {
+    $.each(options, function(i, val) {
+        val.speedMultiplier = $('#speedMultiplier').val();
+    });
+}
+function toggleOnComplete(checkbox) {
+    if (checkbox.checked) {
+        options[3].onComplete = methodToCallOnComplete;
+    } else {
+        options[3].onComplete = null;
+    }
+}
+function methodToCallOnComplete() {
+    console.log('COMPLETE!');
+    alert('COMPLETE!');
+}
 
-				$(document).ready(function(){
-
-					// Setup your Lazy Line element.
-					// see README file for more settings
-					$('#demo').lazylinepainter({
-							'svgData' : svgData,
-							'strokeWidth':7,
-							'strokeColor':'#dc908e',
-							'onComplete' : function(){
-								alert('complete');
-							}
-						}
-					)
-
-					// Paint your Lazy Line, that easy!
-					$('#demo').lazylinepainter('paint');
-				})
-
-
-			})( jQuery );
-
-		</script>
-
-    </head>
-
-    <body>
-
-        <div id='demo'></div>
-
-    </body>
+</script>
 </html>
