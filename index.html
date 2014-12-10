@@ -178,6 +178,16 @@ function methodToCallOnComplete() {
     console.log('COMPLETE!');
     alert('COMPLETE!');
 }
+function randomColor() {
+    var hexstring = 'abcdef0123456789',
+        chars = [];
+    for (var i = 0; i < 6; i++) {
+        var j = Math.round(Math.random() * 6);
+        var c = hexstring.substr(j, 1);
+        chars.push(c);
+    }
+    return '#'+chars.join('');
+}
 
 </script>
 </html>
