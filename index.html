@@ -89,22 +89,6 @@
 </body>
 
 <script type="text/javascript">
-
-var browserwidth = $(window).width();
-
-if (browserwidth < 430) {
-    // adjust illustration size
-    var adjustedWidth = Math.round(browserwidth - 40), 
-        adjustedHeight = Math.round((adjustedWidth * 570) / 430),
-        adjustedMargin = Math.round(adjustedWidth/2 * -1);
-
-    $.each(options, function(i, val) {
-        val.width = adjustedWidth;
-        val.height = adjustedHeight;
-    });
-    // adjust container css
-    $('#circuitree-phase1, #circuitree-phase2, #circuitree-phase3, #circuitree-phase4').css({width: adjustedWidth, height: adjustedHeight, marginLeft:adjustedMargin});
-}
     
 // lazyline
 var options = [
@@ -135,7 +119,8 @@ var options = [
     }
 ];
 
-var first = true;
+var first = true,
+    browserwidth = $(window).width();
 
 function paint() {
     console.log('paint');
@@ -154,6 +139,21 @@ function pauseResume() {
     $('#circuitree-phase4').lazylinepainter('pauseResume');
 }
 function reset() {
+
+    if (browserwidth < 470) {
+        // adjust illustration size
+        var adjustedWidth = Math.round(browserwidth - 40), 
+            adjustedHeight = Math.round((adjustedWidth * 570) / 430),
+            adjustedMargin = Math.round(adjustedWidth/2 * -1);
+
+        $.each(options, function(i, val) {
+            val.width = adjustedWidth;
+            val.height = adjustedHeight;
+        });
+        // adjust container css
+        $('#circuitree-phase1, #circuitree-phase2, #circuitree-phase3, #circuitree-phase4').css({width: adjustedWidth, height: adjustedHeight, marginLeft:adjustedMargin});
+    }
+
     setSpeedMultiplier();
     if (!first) {
         $('#circuitree-phase1').lazylinepainter('erase');
